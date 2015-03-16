@@ -1,0 +1,9 @@
+//  
+// Example init packet generation file
+// 
+Device type (2 bytes)         = 0x1234
+Device revision (2 bytes)     = 0x5678
+Application version (4 bytes) = 0x12345678
+Softdevice version #1         = 0xFFFE
+// (...)
+// CRC is generated automatically based on 
