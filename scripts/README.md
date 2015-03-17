@@ -9,6 +9,7 @@ KEY_OUTPUT is an optional argument to generate a key.hex file suitable to progra
 Example of use
 ==============
 The following generates a test.zip file containing application.bin and application.dat (init file) based on the heart rate example hex and example key found in the examples folder:
+```
 python hmac_init_pkt_gen.py --dev-type 0x1234 \
                             --dev-revision 0xABCD \
                             --application-version 0xDEADBEEF \
@@ -17,12 +18,13 @@ python hmac_init_pkt_gen.py --dev-type 0x1234 \
                             --sd-req 0xFFFE \
                             --application ..\example\nrf51422_xxac_s110_ble_app_hrs.hex \
                             test.zip
+```
                             
 Note: dummy values are used for device type, revision, and application version. sd-req value 0xFFFE is the "catch all" softdevice for versions
 
 Script arguments
 ================
-
+```
 usage: hmac_init_pkt_gen.py [-h] [--dfu-ver DFU_VER] [--dev-type DEV_TYPE]
                             [--dev-revision DEV_REV]
                             [--application-version APP_VER] --key KEY
@@ -55,3 +57,4 @@ optional arguments:
                         The application firmware .hex file
   --bootloader BL       The bootloader firmware .hex file
   --softdevice SD       The SoftDevice firmware .hex file
+  ```
