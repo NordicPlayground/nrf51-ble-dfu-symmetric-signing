@@ -1,6 +1,6 @@
-nrf51-dfu-ble-S110-hmac-sha256
-==============================
-Dual/single Bank DFU over BLE (nRF51, S110 v8.x.x)
+nrf51-ble-dfu-symmetric-signing
+===============================
+Dual/single Bank DFU over BLE (nRF51, S110 v8.x.x) with symmetric signing of firmware image
 
 Based on the dual bank BLE bootloader example in SDKv8.0.0
 
@@ -14,6 +14,9 @@ Requirements
 - nRF51 SDK version 8.0.0
 - S110 SoftDevice version 8.x.x
 - nRF51-DK
+- Python script requirements:
+  - Python 2.7 
+  - IntelHex for Python (https://pypi.python.org/pypi/IntelHex/1.1)
 
 The project may need modifications to work with other versions or other boards. 
 
@@ -27,13 +30,26 @@ For added safety one could generate one random key per nRF51 and keep track of t
 This has the benefit of having a unique HMAC per device, but requires more logistics (increased complexity often equals reduced security).
 
 Per default, dfu_init_hmac_sha256 expects the secret key  to already be present in UICR. Specifically in the upper part of the CUSTOMER section of UICR (starting at address 0x100010E0).
-The included script generates an init packet (.dat) and a key.hex file with the corresponding memory placement, based on an input firmware image and input key. 
+The included script generates an init packet (.dat) and a key.hex file with the corresponding memory placement, based on an input firmware image and input key.
+
+Benefits of secret key approach:
+- Efficient 
+- Simpler implementation than asymmetric algorithms
+- Typically shorter key lengths than asymmetric algorithms, requiring less memory
+- Secret key programmed in production, no key distribution/certificate management required in firmware
+
+Drawbacks of secret key approach:
+- Authentication fails if secret key is exposed
+  - Main application has access to the same memory and could by accident leak the key.
+  - Difficult to safely update secret key if it's compromised  
 
 How to implement HMAC in bootloader
 -----------------------------------
 - Add hmac_sha256.c and sha2.c to your object list, and the corresponding header files to your include path
+- Add the following defines: BYTE_ORDER=LITTLE_ENDIAN SHA2_USE_INTTYPES_H 
 - Replace dfu_init_template.c with dfu_init_hmac_sha256.c
 - Adjust the bootloader memory settings in order to accommodate the increased code size (expect increase by 4 flash pages). Note: BOOTLOADER_REGION_START in dfu_types.h must be updated to reflect the new placement. 
+ - Typically: Start address: 0x3C000, Size: 0x5000
 - NOTE: If your application is using the persistent storage area right beneath bootloader memory area this must be adjusted as well. 
 
 About this project
