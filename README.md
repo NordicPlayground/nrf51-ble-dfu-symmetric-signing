@@ -49,7 +49,7 @@ How to implement HMAC in bootloader
 - Add the following defines: BYTE_ORDER=LITTLE_ENDIAN SHA2_USE_INTTYPES_H 
 - Replace dfu_init_template.c with dfu_init_hmac_sha256.c
 - Adjust the bootloader memory settings in order to accommodate the increased code size (expect increase by 4 flash pages). Note: BOOTLOADER_REGION_START in dfu_types.h must be updated to reflect the new placement. 
- - Typically: Start address: 0x3C000, Size: 0x5000
+ - Typically: Start address: 0x3B000, Size: 0x5000
 - NOTE: If your application is using the persistent storage area right beneath bootloader memory area this must be adjusted as well. 
 
 About this project
