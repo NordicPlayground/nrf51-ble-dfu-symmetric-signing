@@ -21,7 +21,7 @@ python hmac_init_pkt_gen.py --dev-type 0x1234 \
                             test.zip
 ```
                             
-Note: dummy values are used for device type, revision, and application version. sd-req value 0xFFFE is the "catch all" softdevice for versions
+Note: dummy values are used for device type, revision, and application version. sd-req value 0xFFFE is the "catch all" softdevice versions
 
 Script arguments
 ================
@@ -48,6 +48,9 @@ optional arguments:
   --key KEY             Name of key file to use for encrypting the package
   --key-output KEY_OUTPUT
                         Name of file to use if key is to be written to .hex
+  --key-address KEY_ADDRESS
+                        Memory address where the key should be placed.
+                        Defaults to 0x0003F800.
   --sd-req SD_REQ       SoftDevice requirement. What SoftDevice is required to
                         already be present on the target device. Should be a
                         list of firmware IDs. Example: --sd-req 0x4F,0x5A. Use
