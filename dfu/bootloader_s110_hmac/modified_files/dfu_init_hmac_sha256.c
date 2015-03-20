@@ -49,7 +49,9 @@
 
 #include "hmac_sha256.h"
 
-#define SECRET_KEY_ADDR                     (&NRF_UICR->CUSTOMER[32-8])/**< Memory location of secret key. NOTE: KEY SHOULD NEVER BE MOVED OR UPDATED */
+#define UICR_RBPCONF_ADDR                   0x10001004                 /**< Memory location of ReadBack Protection register. This is used to prevent key readback using debugger */
+
+#define SECRET_KEY_ADDR                     0x0003F800                 /**< Memory location of secret key. NOTE: KEY SHOULD NEVER BE MOVED OR UPDATED */
 #define SECRET_KEY_SIZE                     32                         /**< Size of secret key. SHA256 = 32 byte key */
 
 #define DFU_INIT_PACKET_EXT_LENGTH_MIN      SECRET_KEY_SIZE            //< Minimum length of the extended init packet. The extended init packet may contain a CRC, a HASH, or other data. This value must be changed according to the requirements of the system. The template uses a minimum value of two in order to hold a CRC. */
@@ -57,6 +59,10 @@
 
 static uint8_t m_extended_packet[DFU_INIT_PACKET_EXT_LENGTH_MAX];      //< Data array for storage of the extended data received. The extended data follows the normal init data of type \ref dfu_init_packet_t. Extended data can be used for a CRC, hash, signature, or other data. */
 static uint8_t m_extended_packet_length;                               //< Length of the extended data received with init packet. */
+
+//static const uint8_t m_secret_key[CODE_PAGE_SIZE] __attribute__((at(SECRET_KEY_ADDR))) __attribute__((used));
+
+static const uint32_t m_rbpconf_pall_enabled __attribute__((at(UICR_RBPCONF_ADDR))) = 0xFFFF00FF; /* Protect all enabled. */
 
 void __aeabi_assert(const char * error, const char * file, int line)
 {

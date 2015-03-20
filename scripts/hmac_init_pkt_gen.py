@@ -103,6 +103,8 @@ parser.add_argument('--key', required=True, type=str,
                     help='Name of key file to use for encrypting the package')
 parser.add_argument('--key-output', required=False, type=str,
                     help='Name of file to use if key is to be written to .hex')
+parser.add_argument('--key-address', required=False, type=str,
+                    help='Memory address where the key should be placed. Defaults to 0x0003F800.')
 parser.add_argument('--sd-req', required=True, type=str,
                     help="SoftDevice requirement. What SoftDevice "
                          "is required to already be present on the target device. "
@@ -145,9 +147,13 @@ if args.softdevice != None:
 zf.close()
 
 if args.key_output != None:
+    key_address = int(args.key_address,16)
+    if (key_address == None):
+        key_address = 0x0003F800
+
     key_bin = StringIO.StringIO()
     key_bin.write(key)
     fout = open(args.key_output.replace("hex","bin"), "wb")
     fout.write(key)
     fout.close()
-    bin2hex(args.key_output.replace("hex","bin"), args.key_output, 0x100010E0)
+    bin2hex(args.key_output.replace("hex","bin"), args.key_output, key_address)

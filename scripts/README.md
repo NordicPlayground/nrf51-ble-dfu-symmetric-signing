@@ -15,6 +15,7 @@ python hmac_init_pkt_gen.py --dev-type 0x1234 \
                             --application-version 0xDEADBEEF \
                             --key ..\example\example_key.txt \
                             --key-output key.hex \
+                            --key-address 0x0003F800 \
                             --sd-req 0xFFFE \
                             --application ..\example\nrf51422_xxac_s110_ble_app_hrs.hex \
                             test.zip
