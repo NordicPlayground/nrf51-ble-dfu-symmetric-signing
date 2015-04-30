@@ -43,9 +43,11 @@
 #include "dfu_init.h"
 #include <stdint.h>
 #include <string.h>
+#include "bootloader_settings.h"
+#include "crc16.h"
 #include "dfu_types.h"
 #include "nrf_error.h"
-#include "crc16.h"
+#include "nrf_sdm.h"
 
 #include "hmac_sha256.h"
 
@@ -60,13 +62,55 @@
 static uint8_t m_extended_packet[DFU_INIT_PACKET_EXT_LENGTH_MAX];      //< Data array for storage of the extended data received. The extended data follows the normal init data of type \ref dfu_init_packet_t. Extended data can be used for a CRC, hash, signature, or other data. */
 static uint8_t m_extended_packet_length;                               //< Length of the extended data received with init packet. */
 
-//static const uint8_t m_secret_key[CODE_PAGE_SIZE] __attribute__((at(SECRET_KEY_ADDR))) __attribute__((used));
-
 static const uint32_t m_rbpconf_pall_enabled __attribute__((at(UICR_RBPCONF_ADDR))) = 0xFFFF00FF; /* Protect all enabled. */
+
+// Verifying that BOOTLOADER_SETTINGS_ADDRESS is located at the beginning of a flash page
+STATIC_ASSERT((BOOTLOADER_SETTINGS_ADDRESS % CODE_PAGE_SIZE) == 0);
 
 void __aeabi_assert(const char * error, const char * file, int line)
 {
+}
+
+static void nvmc_page_erase(uint32_t address)
+{ 
+  // Enable erase.
+  NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een;
+  while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+  {
+  }
+
+  // Erase the page
+  NRF_NVMC->ERASEPAGE = address;
+  while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+  {
+  }
+  
+  NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
+  while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+  {
+  }
+}
+
+static void erase_and_reset(uint8_t * p_image, uint32_t image_len)
+{
+    // If authentication fails:
+    // 1) Erase bootloader settings to ensure it does not indicate valid code
+    // 2) Erase newly copied firmware image
+    // 3) Reset chip
     
+    // Disable softdevice to get access to NVMC
+    (void) sd_softdevice_disable(); // Ignore return code
+    
+    // Erase settings page
+    nvmc_page_erase(BOOTLOADER_SETTINGS_ADDRESS);
+    
+    // Erase image pages
+    for (int i = 0; i < image_len; i += CODE_PAGE_SIZE)
+    {
+        nvmc_page_erase((uint32_t) &p_image[i]);
+    }
+    
+    NVIC_SystemReset();
 }
 
 uint32_t dfu_init_prevalidate(uint8_t * p_init_data, uint32_t init_data_len)
@@ -149,7 +193,9 @@ uint32_t dfu_init_postvalidate(uint8_t * p_image, uint32_t image_len)
     // Calculate HMAC for received image
     if (!HMAC_SHA256_compute(p_image, image_len, (uint8_t*)SECRET_KEY_ADDR, SECRET_KEY_SIZE, digest))
     {
-        return NRF_ERROR_INVALID_DATA;
+        erase_and_reset(p_image, image_len); // Does not return
+        
+        return NRF_ERROR_INVALID_DATA; 
     }
     
     // Compare calculated and received HMAC
@@ -157,6 +203,8 @@ uint32_t dfu_init_postvalidate(uint8_t * p_image, uint32_t image_len)
     {
         return NRF_SUCCESS;
     }
+    
+    erase_and_reset(p_image, image_len); // Does not return
     
     return NRF_ERROR_INVALID_DATA;
 }
