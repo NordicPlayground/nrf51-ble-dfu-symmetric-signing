@@ -1,3 +1,14 @@
+=====
+NOTE:
+This code has been superseded by the SDK signing example.
+See nRF51 SDK release notes for more details: http://infocenter.nordicsemi.com/topic/com.nordic.infocenter.sdk51.v9.0.0/index.html?cp=4_1_1
+=====
+
+
+
+
+
+
 nrf51-ble-dfu-symmetric-signing
 ===============================
 Dual/single Bank DFU over BLE (nRF51, S110 v8.x.x) with symmetric signing of firmware image
